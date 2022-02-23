@@ -1,0 +1,170 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
+	<script src="http://code.jquery.com/jquery-1.9.1.js"></script> 
+	<script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+
+	<title>Test</title>
+
+	<script>
+		function SetLogin()
+		{
+			try
+			{
+				if ($("#userId").val().length == 0)
+				{
+					alert('아이디(사원번호)를 입력하세요');
+					$("#userId").focus();
+					return;
+				}
+				
+				if ($("#userPwd").val().length == 0)
+				{
+					alert('비밀번호를 입력하세요');
+					$("#userPwd").focus();
+					return;
+				}
+				
+				var sURL = "http://192.168.0.8/LC_SERVICE_TEST/Basic.svc/login";
+
+				var parameters = new Object();
+				parameters.uid = $("#userId").val();
+				parameters.pwd = $("#userPwd").val();
+				
+				$.ajax({
+					type: "POST",
+					url: sURL,
+					data: JSON.stringify(parameters),
+					contentType: 'application/json',
+					async : true,
+					success	: function(response){
+						if (response.result == 0) {
+							alert(response.data);
+						}
+						else {
+							alert(response.message);
+						}
+					},
+					error : function(response, status, error){
+						alert('처리중에 오류가 발생하였습니다' + 
+							  "\n" + "code : " + response.status + "\n" + "message : " + response.responseText + "\n" + "error : " + error);
+					}
+				});
+			}
+			catch (exception)
+			{
+				alert(exception.message);
+			}
+		}
+		
+		function GetCodeList()
+		{
+			try
+			{
+				if ($("#codeDiv").val().length == 0)
+				{
+					alert('코드 구분값을 입력하세요');
+					$("#codeDiv").focus();
+					return;
+				}
+				
+				var sURL = "http://192.168.0.8/LC_SERVICE_TEST/Basic.svc/code_list";
+
+				var parameters = new Object();
+				parameters.code_div = $("#codeDiv").val();
+				
+				$.ajax({
+					type: "POST",
+					url: sURL,
+					data: JSON.stringify(parameters),
+					contentType: 'application/json',
+					async : true,
+					success	: function(response){
+						if (response.result == 0) {
+							alert(response.data);
+						}
+						else {
+							alert(response.message);
+						}
+					},
+					error : function(response, status, error){
+						alert('처리중에 오류가 발생하였습니다' + 
+							  "\n" + "code : " + response.status + "\n" + "message : " + response.responseText + "\n" + "error : " + error);
+					}
+				});
+			}
+			catch (exception)
+			{
+				alert(exception.message);
+			}
+		}
+		
+		function GetFarmList()
+		{
+			try
+			{
+				if ($("#uid").val().length == 0)
+				{
+					alert('User ID를 입력하세요');
+					$("#uid").focus();
+					return;
+				}
+				
+				var sURL = "http://192.168.0.8/LC_SERVICE_TEST/Basic.svc/farm_list";
+
+				var parameters = new Object();
+				parameters.uid = $("#uid").val();
+				
+				$.ajax({
+					type: "POST",
+					url: sURL,
+					data: JSON.stringify(parameters),
+					contentType: 'application/json',
+					async : true,
+					success	: function(response){
+						if (response.result == 0) {
+							alert(response.data);
+						}
+						else {
+							alert(response.message);
+						}
+					},
+					error : function(response, status, error){
+						alert('처리중에 오류가 발생하였습니다' + 
+							  "\n" + "code : " + response.status + "\n" + "message : " + response.responseText + "\n" + "error : " + error);
+					}
+				});
+			}
+			catch (exception)
+			{
+				alert(exception.message);
+			}
+		}
+	</script>
+</head>
+
+<body>
+	<div class="login-form">
+		<h1>Login to Your Account</h1><br>
+
+		<form action="javascript:LoginProcess();">
+			<input type="text" id="userId" placeholder="User ID">
+			<input type="text" id="userPwd" placeholder="Password">
+			<input type="button" value="Login" onclick="SetLogin()">
+			<P>
+			<input type="text" id="codeDiv" placeholder="Code Div">
+			<input type="button" value="Get Code List" onclick="GetCodeList()">
+			<P>
+			<input type="text" id="uid" placeholder="User ID">
+			<input type="button" value="Get Farm List" onclick="GetFarmList()">
+		</form>
+	</div>
+</body>
+
+</html>
