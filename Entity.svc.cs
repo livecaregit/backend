@@ -7104,7 +7104,8 @@ namespace LC_Service
                 else
                     sEntityID = sPrefix + parameters.entity_pin;
 
-                string sKey = "04ECkvNd6RsuAmWNuj6KdemjSBD5YNkgWlv5Vd0KEfQkvLJcW21pqQviA1RcZZZyRInzTd5zVEZUOWiU%2FBSXfw%3D%3D";
+                //string sKey = "04ECkvNd6RsuAmWNuj6KdemjSBD5YNkgWlv5Vd0KEfQkvLJcW21pqQviA1RcZZZyRInzTd5zVEZUOWiU%2FBSXfw%3D%3D";
+                string sKey = "yfQSfxFXxu38KoWOZpdawhtBa2LbrsnMQA5elLShoQzVE8Qu2CNC9GoVCpA9YlsPT7UinwXFERzXa9xuXBAt9g%3D%3D";
                 string sURL = string.Format("http://data.ekape.or.kr/openapi-data/service/user/mtrace/breeding/cattle?cattleNo={0}&ServiceKey={1}", sEntityID, sKey);
 
                 WebClient client = new WebClient();
