@@ -227,7 +227,7 @@ namespace LC_Service
 
                 if (!isError)
                 {
-                    string sQuery = string.Format("SELECT TOP 1 APP_VERSION FROM APP_INFO WHERE FLAG = 'Y' AND APP_DIV = '{0}' ORDER BY SEQ DESC ", pType);
+                    string sQuery = string.Format("SELECT TOP 1 APP_VERSION FROM APP_INFO WHERE APP_VERSION like '1.%' AND FLAG = 'Y' AND APP_DIV = '{0}' ORDER BY SEQ DESC ", pType);
 
                     if (database.QueryOpen(sQuery, ref dataReader))
                     {
