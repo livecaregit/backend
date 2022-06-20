@@ -2775,7 +2775,7 @@ namespace LC_Service
 
                     // FARM_SEQ는 변경하지 않는다
                     sQuery = "UPDATE ENTITY_NEW_INFO SET ";
-                    sQuery += "ENTITY_NO = '" + parameters.entity_id + "', ";
+                    sQuery += "ENTITY_NO = N'" + parameters.entity_id + "', ";
                     sQuery += "ENTITY_SEX = " + parameters.entity_sex + ", ";
                     sQuery += "ENTITY_TYPE = " + parameters.entity_type + ", ";
                     sQuery += "DETAIL_TYPE = " + parameters.detail_type + ", ";
@@ -2783,16 +2783,16 @@ namespace LC_Service
                     sQuery += "BIRTH = CONVERT(DATETIME, '" + parameters.entity_birth + "'), ";
                     sQuery += "BIRTH_MONTH = DATEDIFF(MONTH, CONVERT(DATETIME, '" + parameters.entity_birth + "'), CONVERT(DATETIME, '" + sUtcTime + "')), ";
                     if (string.IsNullOrEmpty(parameters.image_name)) sQuery += "IMAGE_URL = NULL, ";
-                    else sQuery += "IMAGE_URL = '" + sImageURL + "', ";
+                    else sQuery += "IMAGE_URL = N'" + sImageURL + "', ";
                     //if (sTagID != parameters.tag_id)
                     //{
                     //    if (String.IsNullOrEmpty(parameters.tag_id)) sQuery += "TAG_ID = NULL, ";
                     //    else sQuery += "TAG_ID = '" + parameters.tag_id + "', ";
                     //}
                     if (string.IsNullOrEmpty(parameters.entity_pin)) sQuery += "ENTITY_PIN = NULL, ";
-                    else sQuery += "ENTITY_PIN = '" + parameters.entity_pin + "', ";
+                    else sQuery += "ENTITY_PIN = N'" + parameters.entity_pin + "', ";
                     if (string.IsNullOrEmpty(parameters.shipment)) sQuery += "SHIPMENT = NULL, ";
-                    else sQuery += "SHIPMENT = '" + parameters.shipment + "', ";
+                    else sQuery += "SHIPMENT = N'" + parameters.shipment + "', ";
                     if (string.IsNullOrEmpty(parameters.reason)) sQuery += "SHIPMENT_REASON = NULL, ";
                     else sQuery += "SHIPMENT_REASON = N'" + parameters.reason + "', ";
                     sQuery += "CALVE_COUNT = " + parameters.calve_count;
@@ -2857,21 +2857,21 @@ namespace LC_Service
                             sQuery += parameters.farm_seq + ", ";
                             sQuery += parameters.entity_seq + ", ";
                             if (string.IsNullOrEmpty(parameters.sire_name)) sQuery += "NULL , ";
-                            else sQuery += "'" + parameters.sire_name + "', ";
+                            else sQuery += "N'" + parameters.sire_name + "', ";
                             if (string.IsNullOrEmpty(parameters.sire_info)) sQuery += "NULL , ";
-                            else sQuery += "'" + parameters.sire_info + "', ";
+                            else sQuery += "N'" + parameters.sire_info + "', ";
                             if (string.IsNullOrEmpty(parameters.dam_name)) sQuery += "NULL , ";
-                            else sQuery += "'" + parameters.dam_name + "', ";
+                            else sQuery += "N'" + parameters.dam_name + "', ";
                             if (string.IsNullOrEmpty(parameters.dam_info)) sQuery += "NULL , ";
-                            else sQuery += "'" + parameters.dam_info + "', ";
+                            else sQuery += "N'" + parameters.dam_info + "', ";
                             if (string.IsNullOrEmpty(parameters.gs_name)) sQuery += "NULL , ";
-                            else sQuery += "'" + parameters.gs_name + "', ";
+                            else sQuery += "N'" + parameters.gs_name + "', ";
                             if (string.IsNullOrEmpty(parameters.gs_info)) sQuery += "NULL , ";
-                            else sQuery += "'" + parameters.gs_info + "', ";
+                            else sQuery += "N'" + parameters.gs_info + "', ";
                             if (string.IsNullOrEmpty(parameters.ggs_name)) sQuery += "NULL , ";
-                            else sQuery += "'" + parameters.ggs_name + "', ";
+                            else sQuery += "N'" + parameters.ggs_name + "', ";
                             if (string.IsNullOrEmpty(parameters.ggs_info)) sQuery += "NULL";
-                            else sQuery += "'" + parameters.ggs_info + "'";
+                            else sQuery += "N'" + parameters.ggs_info + "'";
                             sQuery += ")";
 
                             count = _mClassDatabase.QueryExecute(sQuery);
@@ -2894,21 +2894,21 @@ namespace LC_Service
                     {
                         sQuery = "UPDATE ENTITY_LINEAGE SET ";
                         if (string.IsNullOrEmpty(parameters.sire_name)) sQuery += "SIRE_NAME = NULL, ";
-                        else sQuery += "SIRE_NAME = '" + parameters.sire_name + "', ";
+                        else sQuery += "SIRE_NAME = N'" + parameters.sire_name + "', ";
                         if (string.IsNullOrEmpty(parameters.sire_info)) sQuery += "SIRE_INFO = NULL, ";
-                        else sQuery += "SIRE_INFO = '" + parameters.sire_info + "', ";
+                        else sQuery += "SIRE_INFO = N'" + parameters.sire_info + "', ";
                         if (string.IsNullOrEmpty(parameters.dam_name)) sQuery += "DAM_NAME = NULL, ";
-                        else sQuery += "DAM_NAME = '" + parameters.dam_name + "', ";
+                        else sQuery += "DAM_NAME = N'" + parameters.dam_name + "', ";
                         if (string.IsNullOrEmpty(parameters.dam_info)) sQuery += "DAM_INFO = NULL, ";
-                        else sQuery += "DAM_INFO = '" + parameters.dam_info + "', ";
+                        else sQuery += "DAM_INFO = N'" + parameters.dam_info + "', ";
                         if (string.IsNullOrEmpty(parameters.gs_name)) sQuery += "GS_NAME = NULL, ";
-                        else sQuery += "GS_NAME = '" + parameters.gs_name + "', ";
+                        else sQuery += "GS_NAME = N'" + parameters.gs_name + "', ";
                         if (string.IsNullOrEmpty(parameters.gs_info)) sQuery += "GS_INFO = NULL, ";
-                        else sQuery += "GS_INFO = '" + parameters.gs_info + "', ";
+                        else sQuery += "GS_INFO = N'" + parameters.gs_info + "', ";
                         if (string.IsNullOrEmpty(parameters.ggs_name)) sQuery += "GGS_NAME = NULL, ";
-                        else sQuery += "GGS_NAME = '" + parameters.ggs_name + "', ";
+                        else sQuery += "GGS_NAME = N'" + parameters.ggs_name + "', ";
                         if (string.IsNullOrEmpty(parameters.ggs_info)) sQuery += "GGS_INFO = NULL ";
-                        else sQuery += "GGS_INFO = '" + parameters.ggs_info + "' ";
+                        else sQuery += "GGS_INFO = N'" + parameters.ggs_info + "' ";
                         sQuery += string.Format(" WHERE ENTITY_SEQ = {0}", parameters.entity_seq);
 
                         count = _mClassDatabase.QueryExecute(sQuery);
