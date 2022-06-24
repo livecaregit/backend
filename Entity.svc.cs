@@ -3062,7 +3062,29 @@ namespace LC_Service
                     return response;
                 }
 
-                if (parameters.entity_seq < 1)
+                /// Demo농장의 개체의 경우 해당 삭제프로세스에서 제외 하도록 한다. 
+                /// DEMO_TAG를 가지고 있으며 데이터수정작업이 진행되는 개체
+                List<int> DemoEntity = new List<int>()
+                {
+                    25566
+                    ,25575
+                    ,25576
+                    ,25577
+                    ,25578
+                    ,25579
+                    ,25581
+                    ,26115
+                    ,41495
+                    ,41496
+                    ,41497
+                    ,41519
+                    ,41520
+                    ,41521
+                    ,41522
+                    ,41523
+                };
+
+                if (parameters.entity_seq < 1 || DemoEntity.Contains(parameters.entity_seq))
                 {
                     response = new ClassResponse.RES_RESULT
                     {
@@ -3922,7 +3944,7 @@ namespace LC_Service
                             pushInfo.alarm_type = sAlarmType;
                             pushInfo.add_title = sAddTitle;
                             pushInfo.add_date = sAddDate;
-                            
+
                             pushList.Add(pushInfo);
                         }
 
@@ -4284,7 +4306,7 @@ namespace LC_Service
                                         "   AND C.CODE_DIV = '160' " +
                                         "   AND C.FLAG = 'Y' " +
                                         " WHERE A.FARM_SEQ = {0} " +
-                                        "   AND A.ENTITY_SEQ = {1} " + 
+                                        "   AND A.ENTITY_SEQ = {1} " +
                                         "   AND A.FLAG = 'Y' ", parameters.farm_seq, parameters.entity_seq);
                 if (parameters.search_year > 0) sQuery += string.Format("   AND DATEPART(YEAR, A.BREED_DATE) = {0}", parameters.search_year);
                 if (!string.IsNullOrEmpty(parameters.search_flag))
@@ -4292,7 +4314,7 @@ namespace LC_Service
                     string[] arrayFlag = parameters.search_flag.Split('|');
 
                     string sSearch = string.Empty;
-                    foreach(string flag in arrayFlag)
+                    foreach (string flag in arrayFlag)
                     {
                         if (string.IsNullOrEmpty(sSearch))
                             sSearch = "'" + flag + "'";
@@ -4566,7 +4588,7 @@ namespace LC_Service
                         sQuery += "       C.EN_VALUE AS ENTITY_SEX_DISP, D.EN_VALUE AS ENTITY_TYPE_DISP, E.EN_VALUE AS DETAIL_TYPE_DISP, F.EN_VALUE AS ENTITY_KIND_DISP ";
                         break;
                 }
-                
+
                 sQuery += string.Format("  FROM ENTITY_NEW_INFO A " +
                                         "  LEFT OUTER JOIN UDF_HISTORY_LASTDATA(2) B " +
                                         "    ON A.SEQ = B.ENTITY_SEQ " +
@@ -6151,7 +6173,7 @@ namespace LC_Service
                                 case "BR": sName = "DIAGNÓ-AG"; break;
                                 default: sName = "S-DIAGNOS"; break;
                             }
-                            
+
                             displayName.Add(sName);
                             displayCount.Add(dataReader.GetInt32(2));
 
@@ -6488,7 +6510,7 @@ namespace LC_Service
 
                             displayName.Add(sName);
                             displayCount.Add(0);
-                            
+
                             while (dataReader.Read())
                             {
                                 displayCount[dataReader.GetInt32(1) - 1] = dataReader.GetInt32(2);
@@ -7431,7 +7453,7 @@ namespace LC_Service
                         message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_DATABASE),
                         data = string.Empty
                     };
-                } 
+                }
 
                 if (!isError)
                 {
