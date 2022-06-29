@@ -3607,6 +3607,7 @@ namespace LC_Service
                                             case "DD": sAlarmType = "건유예정일"; break;
                                             case "CD": sAlarmType = "분만예정일"; break;
                                             case "UA": sAlarmType = "사용자알람"; break;
+                                            case "SC": sAlarmType = "캡슐뱉음"; break;
                                         }
                                         break;
                                     }
@@ -3628,6 +3629,7 @@ namespace LC_Service
                                             case "DD": sAlarmType = "乾乳予定日"; break;
                                             case "CD": sAlarmType = "分娩予定日"; break;
                                             case "UA": sAlarmType = "ユーザーアラーム"; break;
+                                            case "SC": sAlarmType = "カプセル吐き出し"; break;
                                         }
                                         break;
                                     }
@@ -3649,6 +3651,7 @@ namespace LC_Service
                                             case "DD": sAlarmType = "Scheduled dry off date"; break;
                                             case "CD": sAlarmType = "Estimated calving date"; break;
                                             case "UA": sAlarmType = "User Alarm"; break;
+                                            case "SC": sAlarmType = "spitting out capsules"; break;
                                         }
                                         break;
                                     }
@@ -3670,6 +3673,7 @@ namespace LC_Service
                                             case "DD": sAlarmType = "D-agendada de Secagem"; break;
                                             case "CD": sAlarmType = "D-prevista de Parto"; break;
                                             case "UA": sAlarmType = "Alarme do usuário"; break;
+                                            case "SC": sAlarmType = "cuspindo cápsulas"; break;
                                         }
                                         break;
                                     }
@@ -3691,6 +3695,7 @@ namespace LC_Service
                                             case "DD": sAlarmType = "D-agendada de Secagem"; break;
                                             case "CD": sAlarmType = "D-prevista de Parto"; break;
                                             case "UA": sAlarmType = "Alarme do usuário"; break;
+                                            case "SC": sAlarmType = "cuspindo cápsulas"; break;
                                         }
                                         break;
                                     }
@@ -3939,6 +3944,17 @@ namespace LC_Service
                                             break;
                                         }
                                 }
+                            }
+                            else if (pushInfo.alarm_code == "SC")
+                            {
+                                switch (parameters.lang_code)
+                                {
+                                    case "KR": sAddTitle = "캡슐 뱉음 현상이 의심됩니다. 개체의 상태를 확인하세요"; break;
+                                    case "JP": sAddTitle = "カプセルの吐出現象が疑われます。オブジェクトの状態を確認してください"; break;
+                                    case "US": sAddTitle = "Capsule spitting is suspected. Check the state of a cow"; break;
+                                    case "PT": sAddTitle = "Suspeita-se de cuspir cápsula. Verifique o estado de uma vaca"; break;
+                                }
+                                sAddDate = string.Empty;
                             }
 
                             pushInfo.alarm_type = sAlarmType;
