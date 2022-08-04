@@ -484,6 +484,8 @@ namespace LC_Service
         {
             bool result = false;
 
+            _mConnection.ResetState();
+
             switch (_mConnection.State)
             {
                 case ConnectionState.Broken: result = false; break;
