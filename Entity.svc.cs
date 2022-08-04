@@ -1050,6 +1050,269 @@ namespace LC_Service
             #endregion
         }
 
+        public ClassResponse.RES_RESULT GetChartLineInfoRange(ClassRequest.REQ_CHART_LINE_RANGE parameters)
+        {
+            string sModuleName = string.Format("[{0}][{1}]", "Entity", "chart_line_range");
+            string requestData = JsonConvert.SerializeObject(parameters);
+
+            ClassLog._mLogger.InfoFormat("{0}  ==========  START GetChartLineInfoRange  ==========", sModuleName);
+            ClassLog._mLogger.InfoFormat("{0}  RECEIVE REQUEST DATA  [{1}]", sModuleName, requestData);
+
+            ClassResponse.RES_RESULT response = new ClassResponse.RES_RESULT();
+
+            #region Check Parameter Process
+            try
+            {
+                if (string.IsNullOrEmpty(parameters.lang_code))
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_LANG_CODE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_LANG_CODE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+                if (Array.IndexOf(ClassStruct.LANGUAGE_CODE, parameters.lang_code) < 0)
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_LANG_CODE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_LANG_CODE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+                if (parameters.farm_seq < 1)
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_FARM_SEQ,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_FARM_SEQ),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+                if (parameters.entity_seq < 0)
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_ENTITY_SEQ,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_ENTITY_SEQ),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+                DateTime dtValue = DateTime.MinValue;
+
+                if (string.IsNullOrEmpty(parameters.check_start_date) && !DateTime.TryParse(parameters.check_start_date, out dtValue))
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_CHECK_DATE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_CHECK_DATE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+                if (string.IsNullOrEmpty(parameters.check_end_date) && !DateTime.TryParse(parameters.check_end_date, out dtValue))
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_CHECK_DATE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_CHECK_DATE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+            }
+            catch
+            {
+                response = new ClassResponse.RES_RESULT
+                {
+                    result = ClassError.RESULT_SYSTEM_ERROR_EXCEPTION,
+                    message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_EXCEPTION),
+                    data = string.Empty
+                };
+
+                ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                return response;
+            }
+            #endregion
+
+            #region Check Database Process
+            if (!_mClassDatabase.GetConnectionState())
+            {
+                if (!_mClassDatabase.OpenDatabase())
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_SYSTEM_ERROR_DATABASE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_DATABASE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+            }
+            #endregion
+
+            #region Business Logic Process
+            bool isError = false;
+            OleDbDataReader dataReader = null;
+
+            List<ClassStruct.ST_CHART_LINE> lineList = new List<ClassStruct.ST_CHART_LINE>();
+
+            try
+            {
+                double dMinTemp = 0.0d;
+                double dMaxTemp = 100.0d;
+
+                // 개체정보의 온도 설정 값 추출
+                string sQuery = string.Format("SELECT TEMP_MIN, TEMP_MAX " +
+                                       "  FROM ENTITY_NEW_INFO " +
+                                       " WHERE SEQ = {0} " +
+                                       "   AND FARM_SEQ = {1} " +
+                                       "   AND FLAG = 'Y' " +
+                                       "   AND ACTIVE_FLAG = 'Y' ", parameters.entity_seq, parameters.farm_seq);
+                if (_mClassDatabase.QueryOpen(sQuery, ref dataReader))
+                {
+                    if (dataReader.HasRows)
+                    {
+                        dataReader.Read();
+
+                        dMinTemp = dataReader.GetDouble(0);
+                        dMaxTemp = dataReader.GetDouble(1);
+                    }
+                    else
+                    {
+                        isError = true;
+
+                        response = new ClassResponse.RES_RESULT
+                        {
+                            result = ClassError.RESULT_SEARCH_NOTEXIST_ENTITY,
+                            message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SEARCH_NOTEXIST_ENTITY),
+                            data = string.Empty
+                        };
+                    }
+
+                    dataReader.Close();
+                    dataReader.Dispose();
+                }
+                else
+                {
+                    isError = true;
+
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_SYSTEM_ERROR_DATABASE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_DATABASE),
+                        data = string.Empty
+                    };
+                }
+
+                if (!isError)
+                {
+                    sQuery = $@"
+ SELECT CHECK_DATE, AVG_TEMPERATURE 
+ FROM TEMP_HOUR WITH (INDEX = IDX_ENTITY_CHECK_HOUR) 
+ WHERE ENTITY_SEQ = {parameters.entity_seq} 
+ AND (CONVERT(CHAR(10), CREATE_DATE, 23) BETWEEN '{parameters.check_start_date}' AND '{parameters.check_end_date}')
+ ORDER BY CHECK_DATE ";
+
+                    if (_mClassDatabase.QueryOpen(sQuery, ref dataReader))
+                    {
+                        if (dataReader.HasRows)
+                        {
+                            while (dataReader.Read())
+                            {
+                                ClassStruct.ST_CHART_LINE lineInfo = new ClassStruct.ST_CHART_LINE();
+
+                                string sKey = dataReader.GetDateTime(0).ToString("yyyy-MM-dd HH:00:00");
+                                double dTemp = dataReader.GetDouble(1);
+
+                                string sNormalFlag = string.Empty;
+
+                                if (dTemp < dMinTemp || dTemp > dMaxTemp)
+                                {
+                                    lineInfo.time_disp = sKey;
+                                    lineInfo.time_value = dTemp;
+                                    lineInfo.normal_flag = "N";
+                                }
+                                else
+                                {
+                                    lineInfo.time_disp = sKey;
+                                    lineInfo.time_value = dTemp;
+                                    lineInfo.normal_flag = "Y";
+                                }
+
+                                lineList.Add(lineInfo);
+                            }
+                        }
+
+                        dataReader.Close();
+                        dataReader.Dispose();
+                    }
+                    else
+                    {
+                        isError = true;
+
+                        response = new ClassResponse.RES_RESULT
+                        {
+                            result = ClassError.RESULT_SYSTEM_ERROR_DATABASE,
+                            message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_DATABASE),
+                            data = string.Empty
+                        };
+                    }
+                }
+
+                if (!isError)
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_SUCCESS,
+                        message = string.Empty,
+                        data = JsonConvert.SerializeObject(lineList)
+                    };
+                }
+            }
+            catch
+            {
+                response = new ClassResponse.RES_RESULT
+                {
+                    result = ClassError.RESULT_SYSTEM_ERROR_EXCEPTION,
+                    message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_EXCEPTION),
+                    data = string.Empty
+                };
+            }
+            finally
+            {
+                _mClassDatabase.CloseDatabase();
+            }
+
+            ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+            return response;
+            #endregion
+        }
+
         public ClassResponse.RES_RESULT GetChartColorInfo(ClassRequest.REQ_CHART_COLOR parameters)
         {
             string sModuleName = string.Format("[{0}][{1}]", "Entity", "chart_color");
@@ -6879,6 +7142,263 @@ namespace LC_Service
             #endregion
         }
 
+        public ClassResponse.RES_RESULT GetChartActivityRange(ClassRequest.REQ_CHART_LINE_RANGE parameters)
+        {
+            string sModuleName = string.Format("[{0}][{1}]", "Entity", "chart_activity_range");
+            string requestData = JsonConvert.SerializeObject(parameters);
+
+            ClassLog._mLogger.InfoFormat("{0}  ==========  START GetChartActivityRange  ==========", sModuleName);
+            ClassLog._mLogger.InfoFormat("{0}  RECEIVE REQUEST DATA  [{1}]", sModuleName, requestData);
+
+            ClassResponse.RES_RESULT response = new ClassResponse.RES_RESULT();
+
+            #region Check Parameter Process
+            try
+            {
+                if (string.IsNullOrEmpty(parameters.lang_code))
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_LANG_CODE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_LANG_CODE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+                if (Array.IndexOf(ClassStruct.LANGUAGE_CODE, parameters.lang_code) < 0)
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_LANG_CODE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_LANG_CODE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+                if (parameters.farm_seq < 1)
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_FARM_SEQ,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_FARM_SEQ),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+                if (parameters.entity_seq < 0)
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_ENTITY_SEQ,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_ENTITY_SEQ),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+                DateTime dtValue = DateTime.MinValue;
+
+                if (string.IsNullOrEmpty(parameters.check_start_date) && !DateTime.TryParse(parameters.check_start_date, out dtValue))
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_CHECK_DATE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_CHECK_DATE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+                if (string.IsNullOrEmpty(parameters.check_end_date) && !DateTime.TryParse(parameters.check_end_date, out dtValue))
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_CHECK_DATE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_CHECK_DATE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+            }
+            catch
+            {
+                response = new ClassResponse.RES_RESULT
+                {
+                    result = ClassError.RESULT_SYSTEM_ERROR_EXCEPTION,
+                    message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_EXCEPTION),
+                    data = string.Empty
+                };
+
+                ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                return response;
+            }
+            #endregion
+
+            #region Check Database Process
+            if (!_mClassDatabase.GetConnectionState())
+            {
+                if (!_mClassDatabase.OpenDatabase())
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_SYSTEM_ERROR_DATABASE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_DATABASE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+            }
+            #endregion
+
+            #region Business Logic Process
+            bool isError = false;
+            OleDbDataReader dataReader = null;
+
+            List<ClassStruct.ST_CHART_ACTIVITY> activityList = new List<ClassStruct.ST_CHART_ACTIVITY>();
+
+            try
+            {
+                // 활동량 지표를 레오테크인 경우에는 1500으로 설정하고 나머지는 2000으로 설정하기 위해서 TAG_KIND 정보를 추출한다 (2021-03-15)
+                string sTagKind = string.Empty;
+
+                string sQuery = string.Format("SELECT B.TAG_KIND " +
+                                       "  FROM ENTITY_NEW_INFO A " +
+                                       "  LEFT OUTER JOIN TAG_INFO B " +
+                                       "    ON A.TAG_ID = B.TAG_ID " +
+                                       " WHERE A.SEQ = {0} " +
+                                       "   AND A.ACTIVE_FLAG = 'Y' " +
+                                       "   AND A.FLAG = 'Y' " +
+                                       "   AND B.FLAG = 'Y' ", parameters.entity_seq);
+
+                if (_mClassDatabase.QueryOpen(sQuery, ref dataReader))
+                {
+                    if (dataReader.HasRows)
+                    {
+                        dataReader.Read();
+                        sTagKind = dataReader.GetString(0);
+                    }
+
+                    dataReader.Close();
+                    dataReader.Dispose();
+                }
+                else
+                {
+                    isError = true;
+
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_SYSTEM_ERROR_DATABASE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_DATABASE),
+                        data = string.Empty
+                    };
+                }
+
+                if (!isError)
+                {
+                    // 활동량 지표를 레오테크인 경우에는 1500으로 설정하고 나머지는 2000으로 설정한다 (2021-03-15)
+                    int nLimit = 2000;
+                    if (sTagKind == "L") nLimit = 1500;
+                    string sTableName = string.Format("TEMP_ENTITY_{0}", parameters.entity_seq);
+
+                    sQuery = $@"
+ WITH TEMP_LIST AS (
+ SELECT CHECK_YEAR, CHECK_MONTH, CHECK_DAY, CHECK_HOUR, ISNULL(MAX(SENSOR_VALUE), 0) AS MAX_SENSOR_VALUE, 
+ 
+ CONVERT(DATETIME, CONCAT(CONVERT(NVARCHAR, CHECK_YEAR), '-', CONVERT(NVARCHAR, CHECK_MONTH), '-', CONVERT(NVARCHAR, CHECK_DAY), ' ', CONVERT(NVARCHAR, CHECK_HOUR), ':00:00')) AS CREATE_DATE 
+ FROM {sTableName} 
+ WHERE (CONVERT(CHAR(10), CREATE_DATE, 23) BETWEEN '{parameters.check_start_date}' AND '{parameters.check_end_date}')
+ GROUP BY CHECK_YEAR, CHECK_MONTH, CHECK_DAY, CHECK_HOUR 
+ ) 
+ SELECT A.CREATE_DATE, 
+ CASE WHEN A.MAX_SENSOR_VALUE < {nLimit} THEN 0 
+ ELSE A.MAX_SENSOR_VALUE / 1000.0 
+ END SENSOR_VALUE, 
+ MOVING_AVG = (SELECT ISNULL(AVG(B.MAX_SENSOR_VALUE), 0) 
+ FROM TEMP_LIST B 
+ WHERE B.CREATE_DATE >= DATEADD(HOUR, -4, A.CREATE_DATE) 
+ AND B.CREATE_DATE <= A.CREATE_DATE) / 1000.0 
+ FROM TEMP_LIST A 
+ WHERE (CONVERT(CHAR(10), A.CREATE_DATE, 23) BETWEEN '{parameters.check_start_date}' AND '{parameters.check_end_date}')";
+
+                    if (_mClassDatabase.QueryOpen(sQuery, ref dataReader))
+                    {
+                        if (dataReader.HasRows)
+                        {
+                            while (dataReader.Read())
+                            {
+                                string sKey = dataReader.GetDateTime(0).ToString("yyyy-MM-dd HH:00:00");
+                                double dActivity = Convert.ToDouble(dataReader.GetDecimal(1).ToString("F1"));
+                                double dAverage = Convert.ToDouble(dataReader.GetDecimal(2).ToString("F1"));
+
+                                ClassStruct.ST_CHART_ACTIVITY activityInfo = new ClassStruct.ST_CHART_ACTIVITY
+                                {
+                                    time_disp = sKey,
+                                    activity_value = dActivity,
+                                    avg_value = dAverage
+                                };
+
+                                activityList.Add(activityInfo);
+                            }
+                        }
+
+                        dataReader.Close();
+                        dataReader.Dispose();
+
+                        response = new ClassResponse.RES_RESULT
+                        {
+                            result = ClassError.RESULT_SUCCESS,
+                            message = string.Empty,
+                            data = JsonConvert.SerializeObject(activityList)
+                        };
+                    }
+                    else
+                    {
+                        response = new ClassResponse.RES_RESULT
+                        {
+                            result = ClassError.RESULT_SYSTEM_ERROR_DATABASE,
+                            message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_DATABASE),
+                            data = string.Empty
+                        };
+                    }
+                }
+            }
+            catch
+            {
+                response = new ClassResponse.RES_RESULT
+                {
+                    result = ClassError.RESULT_SYSTEM_ERROR_EXCEPTION,
+                    message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_EXCEPTION),
+                    data = string.Empty
+                };
+            }
+            finally
+            {
+                _mClassDatabase.CloseDatabase();
+            }
+
+            ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+            return response;
+            #endregion
+        }
+
         public ClassResponse.RES_RESULT GetInnerActivityStatus(ClassRequest.REQ_FARMENTITY parameters)
         {
             string sModuleName = string.Format("[{0}][{1}]", "Entity", "inner_status");
@@ -7439,6 +7959,227 @@ namespace LC_Service
                                        "   AND CONVERT(CHAR(10), CREATE_DATE, 23) <= '{2}' " +
                                        " GROUP BY CHECK_YEAR, CHECK_MONTH, CHECK_DAY " +
                                        " ORDER BY CHECK_YEAR, CHECK_MONTH, CHECK_DAY ", sTableName, sFrom, sTo);
+
+                if (_mClassDatabase.QueryOpen(sQuery, ref dataReader))
+                {
+                    if (dataReader.HasRows)
+                    {
+                        while (dataReader.Read())
+                        {
+                            ClassStruct.ST_INTERUPT_INFO interuptInfo = new ClassStruct.ST_INTERUPT_INFO
+                            {
+                                time_disp = string.Format("{0}-{1:D2}-{2:D2}", dataReader.GetInt32(0), dataReader.GetInt32(1), dataReader.GetInt32(2)),
+                                interupt_value = dataReader.GetInt32(3)
+                            };
+
+                            infoList.Add(interuptInfo);
+                        }
+                    }
+
+                    dataReader.Close();
+                    dataReader.Dispose();
+                }
+                else
+                {
+                    isError = true;
+
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_SYSTEM_ERROR_DATABASE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_DATABASE),
+                        data = string.Empty
+                    };
+                }
+
+                if (!isError)
+                {
+                    // 데이타가 없을 때에는 Average 추출 시 오류가 발생된다
+                    if (infoList.Count > 0)
+                    {
+                        interuptList.int_average = (int)infoList.Average(x => x.interupt_value);
+                        interuptList.int_list = infoList;
+                    }
+                    else
+                    {
+                        interuptList.int_average = 0;
+                        interuptList.int_list = infoList;
+                    }
+
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_SUCCESS,
+                        message = string.Empty,
+                        data = JsonConvert.SerializeObject(interuptList)
+                    };
+                }
+            }
+            catch
+            {
+                response = new ClassResponse.RES_RESULT
+                {
+                    result = ClassError.RESULT_SYSTEM_ERROR_EXCEPTION,
+                    message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_EXCEPTION),
+                    data = string.Empty
+                };
+            }
+            finally
+            {
+                _mClassDatabase.CloseDatabase();
+            }
+
+            ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+            return response;
+            #endregion
+        }
+
+        public ClassResponse.RES_RESULT GetChartInteruptRange(ClassRequest.REQ_CHART_LINE_RANGE parameters)
+        {
+            string sModuleName = string.Format("[{0}][{1}]", "Entity", "chart_interupt_range");
+            string requestData = JsonConvert.SerializeObject(parameters);
+
+            ClassLog._mLogger.InfoFormat("{0}  ==========  START GetChartInteruptRange  ==========", sModuleName);
+            ClassLog._mLogger.InfoFormat("{0}  RECEIVE REQUEST DATA  [{1}]", sModuleName, requestData);
+
+            ClassResponse.RES_RESULT response = new ClassResponse.RES_RESULT();
+            string receiveData = string.Empty;
+
+            #region Check Parameter Process
+            try
+            {
+                if (string.IsNullOrEmpty(parameters.lang_code))
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_LANG_CODE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_LANG_CODE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+                if (Array.IndexOf(ClassStruct.LANGUAGE_CODE, parameters.lang_code) < 0)
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_LANG_CODE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_LANG_CODE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+                if (parameters.farm_seq < 1)
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_FARM_SEQ,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_FARM_SEQ),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+                if (parameters.entity_seq < 0)
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_ENTITY_SEQ,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_ENTITY_SEQ),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+                
+                
+                DateTime dtValue = DateTime.MinValue;
+
+                if (string.IsNullOrEmpty(parameters.check_start_date) && !DateTime.TryParse(parameters.check_start_date, out dtValue))
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_CHECK_DATE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_CHECK_DATE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+
+                if (string.IsNullOrEmpty(parameters.check_end_date) && !DateTime.TryParse(parameters.check_end_date, out dtValue))
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_PARAM_ERROR_CHECK_DATE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_PARAM_ERROR_CHECK_DATE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+            }
+            catch
+            {
+                response = new ClassResponse.RES_RESULT
+                {
+                    result = ClassError.RESULT_SYSTEM_ERROR_EXCEPTION,
+                    message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_EXCEPTION),
+                    data = string.Empty
+                };
+
+                ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                return response;
+            }
+            #endregion
+
+            #region Check Database Process
+            if (!_mClassDatabase.GetConnectionState())
+            {
+                if (!_mClassDatabase.OpenDatabase())
+                {
+                    response = new ClassResponse.RES_RESULT
+                    {
+                        result = ClassError.RESULT_SYSTEM_ERROR_DATABASE,
+                        message = _mClassError.GetErrorMessage(parameters.lang_code, ClassError.RESULT_SYSTEM_ERROR_DATABASE),
+                        data = string.Empty
+                    };
+
+                    ClassLog._mLogger.Info(string.Format("{0}  RESPONSE DATA  [{1}]", sModuleName, JsonConvert.SerializeObject(response)) + Environment.NewLine);
+                    return response;
+                }
+            }
+            #endregion
+
+            #region Business Logic Process
+            bool isError = false;
+            string sQuery = string.Empty;
+
+            OleDbDataReader dataReader = null;
+            ClassStruct.ST_CHART_INTERUPT interuptList = new ClassStruct.ST_CHART_INTERUPT();
+            List<ClassStruct.ST_INTERUPT_INFO> infoList = new List<ClassStruct.ST_INTERUPT_INFO>();
+
+            Dictionary<string, double> tempDictionary = new Dictionary<string, double>();
+
+            try
+            {
+                string sTableName = string.Format("TEMP_ENTITY_{0}", parameters.entity_seq);
+
+                sQuery = $@"
+ SELECT CHECK_YEAR, CHECK_MONTH, CHECK_DAY, SUM(INT_COUNT) AS SUM_COUNT 
+ FROM {sTableName} 
+ WHERE (CONVERT(CHAR(10), CREATE_DATE, 23) BETWEEN '{parameters.check_start_date}' AND '{parameters.check_end_date}')
+ GROUP BY CHECK_YEAR, CHECK_MONTH, CHECK_DAY 
+ ORDER BY CHECK_YEAR, CHECK_MONTH, CHECK_DAY 
+";
 
                 if (_mClassDatabase.QueryOpen(sQuery, ref dataReader))
                 {

@@ -25,6 +25,10 @@ namespace LC_Service
         ClassResponse.RES_RESULT GetChartLineInfo(ClassRequest.REQ_CHART_LINE parameters);
 
         [OperationContract]
+        [WebInvoke(Method = "POST", UriTemplate = "/chart_line_range", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Bare)]
+        ClassResponse.RES_RESULT GetChartLineInfoRange(ClassRequest.REQ_CHART_LINE_RANGE parameters);
+
+        [OperationContract]
         [WebInvoke(Method = "POST", UriTemplate = "/chart_color", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Bare)]
         ClassResponse.RES_RESULT GetChartColorInfo(ClassRequest.REQ_CHART_COLOR parameters);
 
@@ -89,6 +93,11 @@ namespace LC_Service
         ClassResponse.RES_RESULT GetChartActivity(ClassRequest.REQ_CHART_LINE parameters);
 
         [OperationContract]
+        [WebInvoke(Method = "POST", UriTemplate = "/chart_activity_range", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Bare)]
+        ClassResponse.RES_RESULT GetChartActivityRange(ClassRequest.REQ_CHART_LINE_RANGE parameters);
+
+
+        [OperationContract]
         [WebInvoke(Method = "POST", UriTemplate = "/inner_status", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Bare)]
         ClassResponse.RES_RESULT GetInnerActivityStatus(ClassRequest.REQ_FARMENTITY parameters);
 
@@ -96,8 +105,13 @@ namespace LC_Service
         [WebInvoke(Method = "POST", UriTemplate = "/pin_info", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Bare)]
         ClassResponse.RES_RESULT GetPinInfo(ClassRequest.REQ_PIN_INFO parameters);
 
+
         [OperationContract]
         [WebInvoke(Method = "POST", UriTemplate = "/chart_interupt", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Bare)]
         ClassResponse.RES_RESULT GetChartInterupt(ClassRequest.REQ_CHART_LINE parameters);
+
+        [OperationContract]
+        [WebInvoke(Method = "POST", UriTemplate = "/chart_interupt_range", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Bare)]
+        ClassResponse.RES_RESULT GetChartInteruptRange(ClassRequest.REQ_CHART_LINE_RANGE parameters);
     }
 }

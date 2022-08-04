@@ -837,6 +837,22 @@ namespace LC_Service
         }
 
         [DataContract]
+        public class REQ_CHART_LINE_RANGE
+        {
+            [DataMember(Order = 0)]
+            public string lang_code { get; set; }
+            [DataMember(Order = 1)]
+            public int farm_seq { get; set; }
+            [DataMember(Order = 2)]
+            public int entity_seq { get; set; }
+            [DataMember(Order = 3)]
+            public string check_start_date { get; set; }
+            [DataMember(Order = 4)]
+            public string check_end_date { get; set; }
+        }
+
+
+        [DataContract]
         public class REQ_CHART_COLOR
         {
             [DataMember(Order = 0)]
