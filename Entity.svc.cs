@@ -1235,7 +1235,7 @@ namespace LC_Service
  SELECT CHECK_DATE, AVG_TEMPERATURE 
  FROM TEMP_HOUR WITH (INDEX = IDX_ENTITY_CHECK_HOUR) 
  WHERE ENTITY_SEQ = {parameters.entity_seq} 
- AND (CONVERT(CHAR(10), CREATE_DATE, 23) BETWEEN '{parameters.check_start_date}' AND '{parameters.check_end_date}')
+ AND (CONVERT(CHAR(10), CHECK_DATE, 23) BETWEEN '{parameters.check_start_date}' AND '{parameters.check_end_date}')
  ORDER BY CHECK_DATE ";
 
                     if (_mClassDatabase.QueryOpen(sQuery, ref dataReader))
