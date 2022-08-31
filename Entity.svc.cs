@@ -7318,25 +7318,53 @@ namespace LC_Service
                     if (sTagKind == "L") nLimit = 1500;
                     string sTableName = string.Format("TEMP_ENTITY_{0}", parameters.entity_seq);
 
+                    //                   sQuery = $@"
+                    //WITH TEMP_LIST AS (
+                    //SELECT CHECK_YEAR, CHECK_MONTH, CHECK_DAY, CHECK_HOUR, ISNULL(MAX(SENSOR_VALUE), 0) AS MAX_SENSOR_VALUE, 
+
+                    //CONVERT(DATETIME, CONCAT(CONVERT(NVARCHAR, CHECK_YEAR), '-', CONVERT(NVARCHAR, CHECK_MONTH), '-', CONVERT(NVARCHAR, CHECK_DAY), ' ', CONVERT(NVARCHAR, CHECK_HOUR), ':00:00')) AS CREATE_DATE 
+                    //FROM {sTableName} 
+                    //WHERE (CONVERT(CHAR(10), CREATE_DATE, 23) BETWEEN '{parameters.check_start_date}' AND '{parameters.check_end_date}')
+                    //GROUP BY CHECK_YEAR, CHECK_MONTH, CHECK_DAY, CHECK_HOUR 
+                    //) 
+                    //SELECT A.CREATE_DATE, 
+                    //CASE WHEN A.MAX_SENSOR_VALUE < {nLimit} THEN 0 
+                    //ELSE A.MAX_SENSOR_VALUE / 1000.0 
+                    //END SENSOR_VALUE, 
+                    //MOVING_AVG = (SELECT ISNULL(AVG(B.MAX_SENSOR_VALUE), 0) 
+                    //FROM TEMP_LIST B 
+                    //WHERE B.CREATE_DATE >= DATEADD(HOUR, -4, A.CREATE_DATE) 
+                    //AND B.CREATE_DATE <= A.CREATE_DATE) / 1000.0 
+                    //FROM TEMP_LIST A 
+                    //WHERE (CONVERT(CHAR(10), A.CREATE_DATE, 23) BETWEEN '{parameters.check_start_date}' AND '{parameters.check_end_date}')";
+                    
+                    DateTime dtStartCheckDate = Convert.ToDateTime(parameters.check_start_date);
+                    DateTime dtEndCheckDate = Convert.ToDateTime(parameters.check_end_date);
+
+                    string sStart = dtStartCheckDate.AddHours(-6).ToString("yyyy-MM-dd HH:00:00");
+                    string sFrom = dtStartCheckDate.ToString("yyyy-MM-dd HH:00:00");
+                    string sTo = dtEndCheckDate.AddHours(1).ToString("yyyy-MM-dd HH:00:00");
+
                     sQuery = $@"
  WITH TEMP_LIST AS (
  SELECT CHECK_YEAR, CHECK_MONTH, CHECK_DAY, CHECK_HOUR, ISNULL(MAX(SENSOR_VALUE), 0) AS MAX_SENSOR_VALUE, 
- 
  CONVERT(DATETIME, CONCAT(CONVERT(NVARCHAR, CHECK_YEAR), '-', CONVERT(NVARCHAR, CHECK_MONTH), '-', CONVERT(NVARCHAR, CHECK_DAY), ' ', CONVERT(NVARCHAR, CHECK_HOUR), ':00:00')) AS CREATE_DATE 
  FROM {sTableName} 
- WHERE (CONVERT(CHAR(10), CREATE_DATE, 23) BETWEEN '{parameters.check_start_date}' AND '{parameters.check_end_date}')
- GROUP BY CHECK_YEAR, CHECK_MONTH, CHECK_DAY, CHECK_HOUR 
- ) 
+ WHERE CREATE_DATE >= '{sStart}' 
+ AND CREATE_DATE < '{sTo}' 
+ GROUP BY CHECK_YEAR, CHECK_MONTH, CHECK_DAY, CHECK_HOUR
+ )
  SELECT A.CREATE_DATE, 
  CASE WHEN A.MAX_SENSOR_VALUE < {nLimit} THEN 0 
- ELSE A.MAX_SENSOR_VALUE / 1000.0 
+ ELSE A.MAX_SENSOR_VALUE / 1000.0
  END SENSOR_VALUE, 
  MOVING_AVG = (SELECT ISNULL(AVG(B.MAX_SENSOR_VALUE), 0) 
  FROM TEMP_LIST B 
  WHERE B.CREATE_DATE >= DATEADD(HOUR, -4, A.CREATE_DATE) 
  AND B.CREATE_DATE <= A.CREATE_DATE) / 1000.0 
  FROM TEMP_LIST A 
- WHERE (CONVERT(CHAR(10), A.CREATE_DATE, 23) BETWEEN '{parameters.check_start_date}' AND '{parameters.check_end_date}')";
+ WHERE A.CREATE_DATE >= '{sFrom}' 
+ AND A.CREATE_DATE < '{sTo}'";
 
                     if (_mClassDatabase.QueryOpen(sQuery, ref dataReader))
                     {
