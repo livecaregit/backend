@@ -31,12 +31,14 @@ namespace LC_Service
             ClassStruct.ST_DATABASE stDatabase = new ClassStruct.ST_DATABASE();
 
 #if DEBUG
-            stDatabase.db_server = "livecare-testdb.cdh4z4yvbsq3.ap-northeast-2.rds.amazonaws.com";
+            //stDatabase.db_server = "livecare-testdb.cdh4z4yvbsq3.ap-northeast-2.rds.amazonaws.com";
+            stDatabase.db_server = "db.livecareworld.com";
             stDatabase.db_name = "LIVECARE";
             stDatabase.db_user = "lcservice";
             stDatabase.db_password = "!lcservice!";
 #else
-            stDatabase.db_server = "livecaredb.cdh4z4yvbsq3.ap-northeast-2.rds.amazonaws.com";
+            //stDatabase.db_server = "livecaredb.cdh4z4yvbsq3.ap-northeast-2.rds.amazonaws.com";
+            stDatabase.db_server = "db.livecareworld.com";
             stDatabase.db_name = "LIVECARE";
             stDatabase.db_user = "lcservice";
             stDatabase.db_password = "!lcservice!";

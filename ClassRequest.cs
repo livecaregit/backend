@@ -127,6 +127,7 @@ namespace LC_Service
             public string order_type { get; set; }
             [DataMember(Order = 14)]
             public int page_index { get; set; }
+            public int row_size { get; set; }
         }
 
         [DataContract]

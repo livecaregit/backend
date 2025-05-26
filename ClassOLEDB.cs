@@ -4,6 +4,7 @@ using System.Text;
 using System.Data;
 using System.Data.OleDb;
 using System.Collections.Generic;
+using static LC_Service.ClassStruct;
 
 namespace LC_Service
 {
@@ -30,7 +31,8 @@ namespace LC_Service
             sDBUser = "lcservice";
             sDBPassword = "!lcservice!";
 #else
-            sDBServer = "livecaredb.cdh4z4yvbsq3.ap-northeast-2.rds.amazonaws.com";
+            //sDBServer = "livecaredb.cdh4z4yvbsq3.ap-northeast-2.rds.amazonaws.com";
+            sDBServer = "db.livecareworld.com";
             sDBName = "LIVECARE";
             sDBUser = "lcappapi";
             sDBPassword = "!lcappapi!";
